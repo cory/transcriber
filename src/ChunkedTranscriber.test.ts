@@ -167,4 +167,106 @@ describe('ChunkedTranscriber', () => {
       expect(result).toBe('10:00');
     });
   });
+
+  describe('cache management', () => {
+    describe('setupCacheDir', () => {
+      it('should create cache directory if it does not exist', async () => {
+        const fileHash = 'test-hash';
+        (fs.existsSync as jest.MockedFunction<typeof fs.existsSync>).mockReturnValue(false);
+        (fs.mkdirSync as jest.MockedFunction<typeof fs.mkdirSync>).mockImplementation(() => undefined);
+
+        const result = await transcriber.setupCacheDir(fileHash);
+
+        expect(fs.mkdirSync).toHaveBeenCalledWith(
+          expect.stringContaining(fileHash),
+          { recursive: true }
+        );
+        expect(result).toContain(fileHash);
+      });
+
+      it('should not create directory if it already exists', async () => {
+        const fileHash = 'test-hash';
+        (fs.existsSync as jest.MockedFunction<typeof fs.existsSync>).mockReturnValue(true);
+
+        const result = await transcriber.setupCacheDir(fileHash);
+
+        expect(fs.mkdirSync).not.toHaveBeenCalled();
+        expect(result).toContain(fileHash);
+      });
+    });
+
+    describe('isCacheValid', () => {
+      it('should return true if metadata file exists', async () => {
+        const fileHash = 'test-hash';
+        (fs.existsSync as jest.MockedFunction<typeof fs.existsSync>).mockReturnValue(true);
+
+        const result = await transcriber.isCacheValid(fileHash);
+
+        expect(fs.existsSync).toHaveBeenCalledWith(
+          expect.stringContaining('metadata.json')
+        );
+        expect(result).toBe(true);
+      });
+
+      it('should return false if metadata file does not exist', async () => {
+        const fileHash = 'test-hash';
+        (fs.existsSync as jest.MockedFunction<typeof fs.existsSync>).mockReturnValue(false);
+
+        const result = await transcriber.isCacheValid(fileHash);
+
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('loadCacheMetadata', () => {
+      it('should load and parse metadata from file', async () => {
+        const fileHash = 'test-hash';
+        const mockMetadata = {
+          sourceFile: 'test.mp3',
+          fileHash: fileHash,
+          duration: 600,
+          chunkDuration: 600,
+          overlapDuration: 30,
+          chunks: [],
+          createdAt: '2024-01-01T00:00:00Z',
+          transcripts: {}
+        };
+
+        (fs.readFileSync as jest.MockedFunction<typeof fs.readFileSync>).mockReturnValue(
+          JSON.stringify(mockMetadata)
+        );
+
+        const result = await transcriber.loadCacheMetadata(fileHash);
+
+        expect(fs.readFileSync).toHaveBeenCalledWith(
+          expect.stringContaining('metadata.json'),
+          'utf-8'
+        );
+        expect(result).toEqual(mockMetadata);
+      });
+    });
+
+    describe('saveCacheMetadata', () => {
+      it('should save metadata to file as JSON', async () => {
+        const fileHash = 'test-hash';
+        const mockMetadata = {
+          sourceFile: 'test.mp3',
+          fileHash: fileHash,
+          duration: 600,
+          chunkDuration: 600,
+          overlapDuration: 30,
+          chunks: [],
+          createdAt: '2024-01-01T00:00:00Z',
+          transcripts: {}
+        } as any;
+
+        await transcriber.saveCacheMetadata(fileHash, mockMetadata);
+
+        expect(fs.writeFileSync).toHaveBeenCalledWith(
+          expect.stringContaining('metadata.json'),
+          JSON.stringify(mockMetadata, null, 2)
+        );
+      });
+    });
+  });
 });
