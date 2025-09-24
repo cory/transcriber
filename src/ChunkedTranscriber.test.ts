@@ -125,4 +125,46 @@ describe('ChunkedTranscriber', () => {
       expect(hash1).not.toBe(hash2);
     });
   });
+
+  describe('formatTime', () => {
+    it('should format single digit seconds correctly', () => {
+      const result = transcriber.formatTime(5);
+      expect(result).toBe('0:05');
+    });
+
+    it('should format double digit seconds correctly', () => {
+      const result = transcriber.formatTime(42);
+      expect(result).toBe('0:42');
+    });
+
+    it('should format single minutes correctly', () => {
+      const result = transcriber.formatTime(60);
+      expect(result).toBe('1:00');
+    });
+
+    it('should format minutes and seconds correctly', () => {
+      const result = transcriber.formatTime(125);
+      expect(result).toBe('2:05');
+    });
+
+    it('should format large times correctly', () => {
+      const result = transcriber.formatTime(3665);
+      expect(result).toBe('61:05');
+    });
+
+    it('should handle decimal seconds by flooring', () => {
+      const result = transcriber.formatTime(65.9);
+      expect(result).toBe('1:05');
+    });
+
+    it('should handle zero correctly', () => {
+      const result = transcriber.formatTime(0);
+      expect(result).toBe('0:00');
+    });
+
+    it('should handle exactly 10 minutes', () => {
+      const result = transcriber.formatTime(600);
+      expect(result).toBe('10:00');
+    });
+  });
 });
