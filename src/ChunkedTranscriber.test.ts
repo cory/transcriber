@@ -464,4 +464,117 @@ describe('ChunkedTranscriber', () => {
       expect(result.speakerDescriptions).toBe(speakerDescriptions);
     });
   });
+
+  describe('mergeOverlaps', () => {
+    beforeEach(() => {
+      // Mock ora for these tests
+      jest.clearAllMocks();
+    });
+
+    it('should use full transcript for first chunk', async () => {
+      const transcripts = [
+        {
+          chunkIndex: 0,
+          transcript: 'First chunk content',
+          speakers: new Set<string>(),
+          mainContent: 'First chunk main',
+          overlapContent: 'First chunk overlap'
+        }
+      ];
+
+      const result = await transcriber.mergeOverlaps(transcripts);
+
+      expect(result).toBe('First chunk content');
+    });
+
+    it('should use mainContent for subsequent chunks', async () => {
+      const transcripts = [
+        {
+          chunkIndex: 0,
+          transcript: 'First chunk content',
+          speakers: new Set<string>(),
+          mainContent: 'First chunk main',
+          overlapContent: 'First chunk overlap'
+        },
+        {
+          chunkIndex: 1,
+          transcript: 'Second chunk content with overlap',
+          speakers: new Set<string>(),
+          mainContent: 'Second chunk main only',
+          overlapContent: 'Second chunk overlap'
+        }
+      ];
+
+      const result = await transcriber.mergeOverlaps(transcripts);
+
+      expect(result).toContain('First chunk content');
+      expect(result).toContain('Second chunk main only');
+      expect(result).not.toContain('Second chunk content with overlap');
+    });
+
+    it('should join chunks with separator', async () => {
+      const transcripts = [
+        {
+          chunkIndex: 0,
+          transcript: 'First',
+          speakers: new Set<string>(),
+          mainContent: 'First',
+          overlapContent: ''
+        },
+        {
+          chunkIndex: 1,
+          transcript: 'Second',
+          speakers: new Set<string>(),
+          mainContent: 'Second',
+          overlapContent: ''
+        }
+      ];
+
+      const result = await transcriber.mergeOverlaps(transcripts);
+
+      expect(result).toBe('First\n\n---\n\nSecond');
+    });
+
+    it('should handle empty transcripts array', async () => {
+      const transcripts: any[] = [];
+
+      const result = await transcriber.mergeOverlaps(transcripts);
+
+      expect(result).toBe('');
+    });
+
+    it('should handle multiple chunks correctly', async () => {
+      const transcripts = [
+        {
+          chunkIndex: 0,
+          transcript: 'Chunk 1 full',
+          speakers: new Set<string>(),
+          mainContent: 'Chunk 1 main',
+          overlapContent: 'overlap1'
+        },
+        {
+          chunkIndex: 1,
+          transcript: 'Chunk 2 full',
+          speakers: new Set<string>(),
+          mainContent: 'Chunk 2 main',
+          overlapContent: 'overlap2'
+        },
+        {
+          chunkIndex: 2,
+          transcript: 'Chunk 3 full',
+          speakers: new Set<string>(),
+          mainContent: 'Chunk 3 main',
+          overlapContent: 'overlap3'
+        }
+      ];
+
+      const result = await transcriber.mergeOverlaps(transcripts);
+      const parts = result.split('\n\n---\n\n');
+
+      expect(parts).toHaveLength(3);
+      expect(parts[0]).toBe('Chunk 1 full');
+      expect(parts[1]).toBe('Chunk 2 main');
+      expect(parts[2]).toBe('Chunk 3 main');
+    });
+  });
 });
