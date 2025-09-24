@@ -577,4 +577,70 @@ describe('ChunkedTranscriber', () => {
       expect(parts[2]).toBe('Chunk 3 main');
     });
   });
+
+  describe('error handling', () => {
+    describe('getAudioDuration', () => {
+      it('should throw error when ffprobe fails', async () => {
+        const { exec } = await import('child_process');
+        (exec as any).mockImplementation((cmd: any, callback: any) => {
+          callback(new Error('ffprobe not found'), null, null);
+        });
+
+        await expect(transcriber.getAudioDuration('test.mp3'))
+          .rejects.toThrow('Failed to get audio duration');
+      });
+
+      it('should throw error on invalid JSON from ffprobe', async () => {
+        const { exec } = await import('child_process');
+        (exec as any).mockImplementation((cmd: any, callback: any) => {
+          callback(null, { stdout: 'invalid json' }, null);
+        });
+
+        await expect(transcriber.getAudioDuration('test.mp3'))
+          .rejects.toThrow('Failed to get audio duration');
+      });
+    });
+
+    describe('loadCacheMetadata', () => {
+      it('should throw error on invalid JSON in metadata file', async () => {
+        (fs.readFileSync as jest.MockedFunction<typeof fs.readFileSync>).mockReturnValue(
+          'invalid json content'
+        );
+
+        await expect(transcriber.loadCacheMetadata('test-hash'))
+          .rejects.toThrow();
+      });
+    });
+
+    describe('formatAsMarkdown', () => {
+      it('should handle various file extensions correctly', () => {
+        const transcript = 'Test transcript';
+
+        const result1 = transcriber.formatAsMarkdown(transcript, '/path/to/audio.mp3');
+        expect(result1).toContain('Transcript: audio');
+        expect(result1).toContain('**Source:** audio.mp3');
+
+        const result2 = transcriber.formatAsMarkdown(transcript, '/path/to/podcast.wav');
+        expect(result2).toContain('Transcript: podcast');
+        expect(result2).toContain('**Source:** podcast.wav');
+      });
+
+      it('should include current date in markdown', () => {
+        const transcript = 'Test transcript';
+        const today = new Date().toISOString().split('T')[0];
+
+        const result = transcriber.formatAsMarkdown(transcript, 'test.mp3');
+
+        expect(result).toContain(`**Date:** ${today}`);
+      });
+
+      it('should include model information', () => {
+        const transcript = 'Test transcript';
+
+        const result = transcriber.formatAsMarkdown(transcript, 'test.mp3');
+
+        expect(result).toContain('**Model:** gemini-2.5-pro');
+      });
+    });
+  });
 });
