@@ -357,4 +357,111 @@ describe('ChunkedTranscriber', () => {
       expect(result).toContain('Transcribe the audio now:');
     });
   });
+
+  describe('updateContext', () => {
+    it('should extract last 500 words from transcript', () => {
+      const longText = Array(600).fill('word').join(' ');
+      const transcript = {
+        chunkIndex: 0,
+        transcript: longText,
+        speakers: new Set<string>(),
+        mainContent: '',
+        overlapContent: ''
+      };
+      const context = {
+        previousTranscript: '',
+        speakers: new Map(),
+        speakerDescriptions: new Map()
+      };
+
+      const result = transcriber.updateContext(context, transcript);
+
+      const wordCount = result.previousTranscript.split(/\s+/).length;
+      expect(wordCount).toBe(500);
+    });
+
+    it('should use full transcript if less than 500 words', () => {
+      const shortText = 'This is a short transcript with few words';
+      const transcript = {
+        chunkIndex: 0,
+        transcript: shortText,
+        speakers: new Set<string>(),
+        mainContent: '',
+        overlapContent: ''
+      };
+      const context = {
+        previousTranscript: '',
+        speakers: new Map(),
+        speakerDescriptions: new Map()
+      };
+
+      const result = transcriber.updateContext(context, transcript);
+
+      expect(result.previousTranscript).toBe(shortText);
+    });
+
+    it('should add new speakers to the context', () => {
+      const transcript = {
+        chunkIndex: 0,
+        transcript: 'test',
+        speakers: new Set(['Host', 'Guest']),
+        mainContent: '',
+        overlapContent: ''
+      };
+      const context = {
+        previousTranscript: '',
+        speakers: new Map(),
+        speakerDescriptions: new Map()
+      };
+
+      const result = transcriber.updateContext(context, transcript);
+
+      expect(result.speakers.has('Host')).toBe(true);
+      expect(result.speakers.has('Guest')).toBe(true);
+      expect(result.speakers.get('Host')).toBe('Host');
+      expect(result.speakers.get('Guest')).toBe('Guest');
+    });
+
+    it('should preserve existing speakers', () => {
+      const transcript = {
+        chunkIndex: 0,
+        transcript: 'test',
+        speakers: new Set(['Guest2']),
+        mainContent: '',
+        overlapContent: ''
+      };
+      const context = {
+        previousTranscript: '',
+        speakers: new Map([['Host', 'Host'], ['Guest1', 'Guest1']]),
+        speakerDescriptions: new Map()
+      };
+
+      const result = transcriber.updateContext(context, transcript);
+
+      expect(result.speakers.size).toBe(3);
+      expect(result.speakers.has('Host')).toBe(true);
+      expect(result.speakers.has('Guest1')).toBe(true);
+      expect(result.speakers.has('Guest2')).toBe(true);
+    });
+
+    it('should preserve speaker descriptions', () => {
+      const transcript = {
+        chunkIndex: 0,
+        transcript: 'test',
+        speakers: new Set<string>(),
+        mainContent: '',
+        overlapContent: ''
+      };
+      const speakerDescriptions = new Map([['Host', 'Main interviewer']]);
+      const context = {
+        previousTranscript: '',
+        speakers: new Map(),
+        speakerDescriptions
+      };
+
+      const result = transcriber.updateContext(context, transcript);
+
+      expect(result.speakerDescriptions).toBe(speakerDescriptions);
+    });
+  });
 });
