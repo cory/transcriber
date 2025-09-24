@@ -269,4 +269,92 @@ describe('ChunkedTranscriber', () => {
       });
     });
   });
+
+  describe('buildContextualPrompt', () => {
+    it('should build basic prompt without context', () => {
+      const context = {
+        previousTranscript: '',
+        speakers: new Map(),
+        speakerDescriptions: new Map()
+      };
+
+      const result = transcriber.buildContextualPrompt(context);
+
+      expect(result).toContain('Please transcribe this audio segment');
+      expect(result).toContain('Identify and label speakers consistently');
+      expect(result).not.toContain('CONTEXT FROM PREVIOUS SEGMENT');
+      expect(result).not.toContain('IDENTIFIED SPEAKERS SO FAR');
+    });
+
+    it('should include previous transcript when available', () => {
+      const context = {
+        previousTranscript: 'Previous conversation content here',
+        speakers: new Map(),
+        speakerDescriptions: new Map()
+      };
+
+      const result = transcriber.buildContextualPrompt(context);
+
+      expect(result).toContain('CONTEXT FROM PREVIOUS SEGMENT');
+      expect(result).toContain('Previous conversation content here');
+    });
+
+    it('should include identified speakers', () => {
+      const speakers = new Map([
+        ['1', 'Host'],
+        ['2', 'Guest']
+      ]);
+      const context = {
+        previousTranscript: '',
+        speakers,
+        speakerDescriptions: new Map()
+      };
+
+      const result = transcriber.buildContextualPrompt(context);
+
+      expect(result).toContain('IDENTIFIED SPEAKERS SO FAR');
+      expect(result).toContain('Host');
+      expect(result).toContain('Guest');
+      expect(result).toContain('Please use these same speaker labels for consistency');
+    });
+
+    it('should include speaker descriptions when available', () => {
+      const speakers = new Map([['1', 'Host']]);
+      const speakerDescriptions = new Map([['1', 'Main interviewer']]);
+      const context = {
+        previousTranscript: '',
+        speakers,
+        speakerDescriptions
+      };
+
+      const result = transcriber.buildContextualPrompt(context);
+
+      expect(result).toContain('Host: Main interviewer');
+    });
+
+    it('should combine all context elements', () => {
+      const speakers = new Map([
+        ['1', 'Host'],
+        ['2', 'Guest']
+      ]);
+      const speakerDescriptions = new Map([
+        ['1', 'Main interviewer'],
+        ['2', 'Expert on AI']
+      ]);
+      const context = {
+        previousTranscript: 'Previous conversation about AI',
+        speakers,
+        speakerDescriptions
+      };
+
+      const result = transcriber.buildContextualPrompt(context);
+
+      expect(result).toContain('CONTEXT FROM PREVIOUS SEGMENT');
+      expect(result).toContain('Previous conversation about AI');
+      expect(result).toContain('IDENTIFIED SPEAKERS SO FAR');
+      expect(result).toContain('Host: Main interviewer');
+      expect(result).toContain('Guest: Expert on AI');
+      expect(result).toContain('Transcribe the audio now:');
+    });
+  });
 });
