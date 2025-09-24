@@ -143,6 +143,36 @@ Delete the cache directory for your file:
 rm -rf .cache/audio/[hash]/
 ```
 
+## Testing
+
+The project includes comprehensive unit tests for all core functionality:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode for development
+npm test:watch
+
+# Run tests with coverage report
+npm test:coverage
+
+# Run specific test suites
+NODE_OPTIONS="--experimental-vm-modules" npm test -- ChunkedTranscriber.test.ts
+```
+
+### Test Coverage
+
+The test suite covers:
+- **File hashing**: Consistent hash generation for cache identification
+- **Time formatting**: Edge cases and various time formats
+- **Cache management**: Directory creation, metadata serialization/deserialization
+- **Context building**: Prompt generation with speaker tracking
+- **Chunk processing**: Overlap resolution and merging strategies
+- **Error handling**: FFmpeg failures, invalid JSON, missing files
+
+Tests are written using Jest with ESM support and include extensive mocking to avoid external dependencies.
+
 ## Performance
 
 - **File Size**: No limit (tested with 2+ hour podcasts)
@@ -153,7 +183,3 @@ rm -rf .cache/audio/[hash]/
 ## License
 
 MIT
-
-## Contributing
-
-Pull requests welcome! Please ensure all TypeScript passes linting.
