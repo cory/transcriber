@@ -1,0 +1,82 @@
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Cache directory - IMPORTANT for transcriber
+.cache/
+.parcel-cache
+
+# Audio/Video files
+*.mp3
+*.wav
+*.m4a
+*.mp4
+*.flac
+*.ogg
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Temp directories
+tmp/
+temp/
+.temp
+
+# ALL markdown files except documentation
+*.md
+!README.md
+!README-GEMINI.md
+!USAGE.md
+!claude-gemini.md
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage
+*.lcov
+.nyc_output
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Yarn
+.yarn-integrity
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
