@@ -43,7 +43,7 @@ jest.unstable_mockModule('@google/genai', () => ({
 
 // Import after mocks are set up
 const fs = await import('fs');
-const ChunkedTranscriberModule = await import('./ChunkedTranscriber');
+const ChunkedTranscriberModule = await import('./ChunkedTranscriber.js');
 
 describe('ChunkedTranscriber', () => {
   let transcriber: InstanceType<typeof ChunkedTranscriberModule.ChunkedTranscriber>;

@@ -291,11 +291,28 @@ export class ChunkedTranscriber {
 
     for (let i = 0; i < transcripts.length; i++) {
       if (i === 0) {
-        // First chunk - use everything
-        merged.push(transcripts[i].transcript);
-      } else {
-        // For subsequent chunks, remove overlap that was already included
+        // First chunk - use everything (mainContent + overlapContent)
         merged.push(transcripts[i].mainContent);
+        if (transcripts[i].overlapContent) {
+          merged.push(transcripts[i].overlapContent);
+        }
+      } else {
+        // For subsequent chunks, include previous overlap content to avoid data loss
+        // The final polish step will handle any true duplicates
+        if (i > 0 && transcripts[i - 1].overlapContent) {
+          // Check if the previous overlap is likely already in current mainContent
+          const prevOverlap = transcripts[i - 1].overlapContent.trim();
+          const currentMain = transcripts[i].mainContent.trim();
+
+          // Only include previous overlap if it's not found in current chunk
+          if (!currentMain.includes(prevOverlap.substring(0, Math.min(100, prevOverlap.length)))) {
+            merged.push(prevOverlap);
+          }
+        }
+        merged.push(transcripts[i].mainContent);
+        if (transcripts[i].overlapContent) {
+          merged.push(transcripts[i].overlapContent);
+        }
       }
     }
 
