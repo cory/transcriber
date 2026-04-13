@@ -26,7 +26,9 @@ program
 program
   .argument('<input>', 'Path to the audio file')
   .option('-o, --output <path>', 'Output file path')
-  .option('-m, --model <model>', 'Gemini model to use', 'gemini-2.5-pro')
+  .option('-m, --model <model>', 'Gemini model to use', 'gemini-3.1-pro-preview')
+  .option('--flash', 'Use gemini-3-flash-preview')
+  .option('--pro', 'Use gemini-3.1-pro-preview')
   .option('--cache-dir <dir>', 'Cache directory', '.cache/audio')
   .action(async (input: string, options) => {
     try {
@@ -34,10 +36,14 @@ program
       const outputPath = options.output ||
         `${path.basename(inputPath, path.extname(inputPath))}-transcript.md`;
 
+      let model = options.model;
+      if (options.flash) model = 'gemini-3-flash-preview';
+      if (options.pro) model = 'gemini-3.1-pro-preview';
+
       const transcriber = new ChunkedTranscriber({
         apiKey: API_KEY,
         cacheDir: options.cacheDir,
-        model: options.model
+        model
       });
 
       await transcriber.transcribe(inputPath, outputPath);

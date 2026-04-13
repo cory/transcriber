@@ -26,7 +26,7 @@ const genAI = new GoogleGenAI({ apiKey: API_KEY });
 
 // Generate content
 const result = await genAI.models.generateContent({
-  model: "gemini-2.5-pro", // or other model versions
+  model: "gemini-3.1-pro-preview", // or other model versions
   contents: [{
     role: "user",
     parts: [{ text: "Your prompt here" }]
@@ -45,7 +45,7 @@ const audioBuffer = fs.readFileSync(audioPath);
 const audioBase64 = audioBuffer.toString('base64');
 
 const result = await genAI.models.generateContent({
-  model: "gemini-2.5-pro",
+  model: "gemini-3.1-pro-preview",
   contents: [{
     role: "user",
     parts: [
@@ -70,8 +70,8 @@ Use either of these environment variable names for the API key:
 ## Available Models
 
 Common model options:
-- `gemini-2.5-pro` - Latest and most capable
-- `gemini-2.5-flash` - Faster, lighter model
+- `gemini-3.1-pro-preview` - Latest and most capable
+- `gemini-3-flash-preview` - Faster, lighter model
 
 ## Documentation
 

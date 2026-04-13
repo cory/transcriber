@@ -70,7 +70,11 @@ node dist/index.js audio.mp3
 npm start audio.mp3 -- -o transcript.md
 
 # Use a different model
-npm start audio.mp3 -- --model gemini-2.5-flash
+npm start audio.mp3 -- --model gemini-3-flash-preview
+
+# Shortcut flags
+npm start audio.mp3 -- --pro     # gemini-3.1-pro-preview
+npm start audio.mp3 -- --flash   # gemini-3-flash-preview
 
 # Custom cache directory
 npm start audio.mp3 -- --cache-dir /path/to/cache
@@ -78,9 +82,8 @@ npm start audio.mp3 -- --cache-dir /path/to/cache
 
 ### Available Models
 
-- `gemini-2.5-pro` (default) - Best accuracy, speaker identification
-- `gemini-2.5-flash` - Faster, more cost-effective
-- `gemini-1.5-pro` - Previous generation, still reliable
+- `gemini-3.1-pro-preview` (default) - Best accuracy, speaker identification
+- `gemini-3-flash-preview` - Faster, more cost-effective
 
 ## How It Works
 
@@ -132,7 +135,7 @@ The tool generates clean markdown with:
 Install ffmpeg using the instructions in Prerequisites.
 
 ### "API quota exceeded"
-Check your Google Cloud Console for quota limits. Consider using `gemini-2.5-flash` for lower cost.
+Check your Google Cloud Console for quota limits. Consider using `gemini-3-flash-preview` for lower cost.
 
 ### Transcription seems stuck
 Check the `.cache/audio/[hash]/metadata.json` file to see progress. The tool saves after each chunk.
